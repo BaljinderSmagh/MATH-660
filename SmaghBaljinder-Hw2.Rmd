@@ -1,0 +1,193 @@
+---
+title: "Homework-2"
+output: 
+  pdf_document: default
+  html_document: default
+date: "4th Oct 2020"
+theme: cerulean
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,cache=TRUE,eval = FALSE)
+library(ggplot2)
+```
+
+
+
+```{r}
+newyork_zipcode<-read.csv('CovidData-NYCZipcodeCounts.csv',header=T)
+newyork_state<-read.csv('CovidData-NYStateDailyCounts.csv',header=T)
+
+```
+
+### 1(a) A bar graph showing the number of zipcodes in each NYC borough
+
+```{r, fig.width=6, fig.height=4}
+library(ggplot2)
+ggplot(data=newyork_zipcode,mapping= aes(x=BOROUGH_GROUP)) + geom_bar() + labs(x=" ", y="Number of zip codes")
+
+```
+
+### 1(b)Histogram of the number of Covid deaths by zipcode, using a bin width of 20:
+
+```{r}
+ggplot(data=newyork_zipcode) + geom_histogram(mapping=aes(x=COVID_DEATH_COUNT),binwidth=20,color="grey")
+```
+
+
+### 1(c)Similar to a histogram of the number of Covid deaths by zipcode, using a bin width of 20, but with the bars joined by lines instead:
+
+```{r}
+ggplot(data=newyork_zipcode,aes(x=COVID_DEATH_COUNT)) + geom_freqpoly(binwidth=20)
+```
+
+### 1(d)Side-by-side boxplots of the percent tested positive in each zipcode:
+
+```{r}
+ggplot(data=newyork_zipcode,aes(x=BOROUGH_GROUP,y=PERCENT_POSITIVE)) + geom_boxplot()
+```
+
+### 1(e)Scatter plot of Covid deaths by zipcode vs Covid cases by zipcode:
+
+```{r}
+ggplot(data=newyork_zipcode,aes(x=COVID_CASE_COUNT,y=COVID_DEATH_COUNT)) + geom_point(aes(color=BOROUGH_GROUP,size=BOROUGH_GROUP))
+```
+
+### 1(f)Scatter  plot  of  zipcode  deaths  vs  percent  positive,  separated  by  borough  and  with  afitted line:
+
+```{r}
+ggplot(data=newyork_zipcode,aes(x=PERCENT_POSITIVE,y=COVID_DEATH_COUNT)) + geom_point() + geom_smooth(method = "lm") + facet_grid(rows=vars(BOROUGH_GROUP))
+```
+
+### 1(g)A timeplot of the daily number of cases and number of hospitalizations:
+
+
+```{r}
+ggplot(data=newyork_state) + geom_point(aes(x= as.numeric(row.names(newyork_state)),y=Cases,group=1)) + geom_line(aes(x=as.numeric(row.names(newyork_state)),y=Hospitalizations,group=1),color="grey") + labs(x = "Day 1 is Feb 29,2020", y = "Number of Cases and Hospitalizations") 
+```
+
+### 1(h)Scatter plot of the daily number of deaths vs daily number of hospitalizations:
+
+```{r}
+ggplot(data=newyork_state,aes(x=Hospitalizations,y=Deaths)) + geom_point(aes(color=Cases),shape=4)
+```
+
+### 1(i)Scatter plot of the daily proportion of deaths to hospitalizatons vs number of hospitalizations:
+```{r}
+newyork_state$proportion<-(newyork_state$Deaths/newyork_state$Hospitalizations)
+
+ggplot(data=newyork_state,aes(x=Hospitalizations,y=proportion)) + geom_point(aes(color=Cases),na.rm=TRUE) + labs(y="Proportion of death to hospitalizations")
+```
+
+
+
+### Q2(a)Find the total number of cases in New York City.Find also the total population
+
+```{r}
+total_num_of_cases<-sum(newyork_zipcode$COVID_CASE_COUNT)
+paste( "There are total",total_num_of_cases,"cases")
+```
+
+### There are Total  207461 cases
+
+```{r}
+total_population<-sum(newyork_zipcode$POP_DENOMINATOR)
+
+paste("The total populations is",total_population)
+```
+
+### The total populations is 8394354.96
+
+### Q2(b)Obtain summary statistics of all the numerical columns inCovidbyzip.  Use the lapply and sapply functions.
+
+```{r}
+lapply(newyork_zipcode[,c(4:10)],summary)
+
+sapply(newyork_zipcode[,c(4:10)],summary)
+```
+
+### Q2(c) Obtain summary statistics of Covid case counts for Brooklyn zipcodes only.
+
+```{r}
+summary(newyork_zipcode[newyork_zipcode$BOROUGH_GROUP=="Brooklyn","COVID_CASE_COUNT"])
+```
+
+### Q2(d)Do the same thing for the Bronx zipcodes only and Staten Island zipcodes only.
+
+```{r}
+summary(newyork_zipcode[newyork_zipcode$BOROUGH_GROUP=="Bronx","COVID_CASE_COUNT"])
+
+summary(newyork_zipcode[newyork_zipcode$BOROUGH_GROUP=="Staten Island","COVID_CASE_COUNT"])
+
+```
+### Q2(e)Identify the NYC zipcode and neighborhood name with the highest percent positive.
+
+```{r}
+newyork_zipcode[newyork_zipcode$PERCENT_POSITIVE==max(newyork_zipcode$PERCENT_POSITIVE),c(1,2)]
+
+paste("The zipcode is 11369 and neighborhood name=Airport/East Elmhurst")
+
+```
+
+## The zipcode is 11369 and neighborhood name=Airport/East Elmhurst"
+
+### Q2(f) On which day were there the most number of hospitalizations relative to cases in NYState?
+
+```{r, echo=FALSE}
+library(sqldf)
+library(lubridate)
+
+sqldf("select DATE_OF_INTEREST,MAX(Hospitalizations) from newyork_state")
+
+wday("04/06/2020",label=TRUE)
+
+paste("The date is 04/06/2020 and day is Sunday")
+
+```
+
+## The date is 04/06/2020 and day is Sunday
+
+### Q3(a)Use seq to create a vector with elements 1,3, 5, ...  to 27.  Extract the 10th value of this vector.
+
+```{r}
+vec<-seq(1,27,2)
+
+vec[10]
+```
+### Q3(b)Reverse the order of your vector above.
+
+```{r}
+rev(vec)
+```
+
+### Q3(c) Create a vector consisting of, thirty 1’s, twenty 6’s and eleven 9’s.
+
+```{r}
+vec3<-rep(c(1,6,9),c(30,20,11))
+
+vec3
+
+```
+
+### Q3(d)Create  a  diagonal  matrix  with  the  numbers  2,  4,  6,  ...   20  in  the  diagonal.Find  its inverse.
+
+```{r}
+vec4<-seq(2,20,by=2)
+
+vec4
+
+diag_mat<-diag(vec4)
+
+
+solve(diag_mat)
+
+```
+
+### Q3(e) Extract the 7th column of the matrix you created in 3(d).  Make this vector (i.e the 7thcolumn) into a 2×5 matrix, fillng out the matrix by column.
+
+```{r}
+new_mat<-matrix(diag_mat[,7],nrow=2, ncol=5,byrow=FALSE)
+
+new_mat
+```
+
