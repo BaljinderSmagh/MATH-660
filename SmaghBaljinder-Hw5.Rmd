@@ -1,0 +1,216 @@
+---
+title: 'Homework-5'
+output:
+  pdf_document: default
+  html_document: default
+date: 23 Nov, 2020
+theme: cerulean
+---
+
+<!-- For more info on RMarkdown see http://rmarkdown.rstudio.com/ -->
+
+
+  
+### Problem 1
+  
+```{r}
+
+n <- 1000
+lambda <- 10
+std.X.bar <- NULL
+for(r in 1:1000){
+  X <- rpois(n,lambda)
+  std.X.bar[r] <- sqrt(n)*(mean(X)-lambda)/sqrt(lambda)
+}
+hist(std.X.bar[std.X.bar<=0],main="Histogram",xlab="X",freq=FALSE)
+x<-seq(-3,3,length=100)
+y<-pnorm(x)
+lines(x,y,col="red")
+```
+
+### Explanation for Part 1-CDF is the cummulative distrubtion Function which gives the area under the graph or probability that will take the value less than or equal to x. In The above code we use simulation to verify the cdf property.We first created a poisson distribution data X(n=1000) in each simulation(1000) and find std.X.bar value for X. In the last we filtered the std.X.bar with x(Z_n<=0) and plot it with pnorm() to compare the two.The resulted plot verifies the CDF property.
+
+
+
+
+
+### Problem 2
+
+```{r}
+sixToss <- function(num){
+  x <- sample(1:6, size = 6*num, replace = TRUE)
+  return(length(which(x==6)) >=num) 
+}
+```
+### Problem 2 Part A Solution
+
+```{r}
+outputA <- replicate(1000, sixToss(1))
+sum(outputA)/length(outputA)
+
+```
+
+### Problem 2 Part B Solution
+
+```{r}
+outputB <- replicate(1000, sixToss(2))
+sum(outputB)/length(outputB)
+
+```
+
+### Problem 2 Part C Solution
+
+```{r}
+
+outputC <- replicate(1000, sixToss(3))
+sum(outputC)/length(outputC)
+
+```
+
+
+
+
+### Problem 3
+
+### y_t calculation
+```{r}
+calculate_y_t<-function(n){
+  alpha=1
+  phi=0.3
+  k=n
+  y<-NULL
+  y[1]=0
+  
+  for (t in 2:k){
+    
+    y[t]= alpha + phi * y[t-1] + rnorm(1)
+    
+  }
+  return(y)
+}
+
+```
+
+### y_bar calculation
+```{r}
+y_bar<-function(n){
+ return((1/n) * sum(calculate_y_t(n)))
+}
+```
+
+### y_rho(h) calculation
+```{r}
+y_rho<-function(h,n){
+  const<-y_bar(n)
+  y_rho_value =0
+  y_value = calculate_y_t(n)
+  for (t in 1:(n-h)){
+    y_rho_value= y_rho_value + ((y_value[t+h]-const) * (y_value[t]-const))
+  }
+  return(y_rho_value)
+}
+```
+
+
+### p_rho(h) calculation
+```{r}
+row_function<-function(h,n){
+  return(y_rho(h,n)/y_rho(0,n))
+}
+```
+
+
+### Method 1 Calculation
+```{r}
+formula_1<-function(h, n){
+  variance=0
+  for (l in 1:h-1){
+    variance= variance + row_function(l,n) 
+  }
+  return ((1/n) * (1 + 2 *(variance)))
+}
+```
+
+### Method 2 Calculation
+```{r}
+formula_2<-function(h,n){
+  return(1/n * (n-h/n+2))
+}
+```
+
+
+### Formula 1 value
+```{r}
+formula_1(1,100)
+```
+
+### Formula 2 value
+```{r}
+formula_2(1,100)
+```
+
+
+### Calculating variance of rho hat
+
+```{r}
+rho_hat <-NULL
+
+variance_rho_hat<-function(h,n){
+  for (i in 1:1000){
+    rho_hat[i]=row_function(h,n)
+  }
+  return(var(rho_hat))
+}
+```
+
+
+### Comparison of two formula with variance obtained for rho hat for h=1
+
+```{r}
+variance_rho_hat(1,100)-formula_1(1,100)
+variance_rho_hat(1,100)-formula_2(1,100)
+
+```
+### Comparison of two formula with variance obtained for rho hat for h=5
+
+```{r}
+
+variance_rho_hat(5,100)-formula_1(5,100)
+variance_rho_hat(5,100)-formula_2(5,100)
+
+
+```
+
+### Comparison of two formula with variance obtained for rho hat for h=10
+
+```{r}
+variance_rho_hat(10,100)-formula_1(10,100)
+variance_rho_hat(10,100)-formula_2(10,100)
+
+```
+
+
+### The comparison results we are getting with formula 1 are more closer to actual variance of rho hat.
+
+### Problem 4
+
+```{r}
+inverse_cdf<-function(n,lambda){
+  for (i in 1:1000){
+    U<- runif(n)
+    Y <- -log(1-U)
+  }
+  hist(Y,main="Inverse CDF",freq = FALSE)
+  x<-seq(0,8,length=2000)
+  y<-dexp(x, rate=lambda)
+  lines(x,y, col='red')
+}
+
+```
+
+
+### Solution For Problem 4
+```{r}
+
+inverse_cdf(1000,1)
+```
